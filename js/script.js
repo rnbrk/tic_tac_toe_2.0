@@ -184,7 +184,7 @@ Game.prototype.generateBoard = function generateBoard(width) {
   this.board = fill2DArray(width, width, Tile);
   this.width = width;
   this.winner = undefined;
-  this.updateView();
+  // this.updateView();
 };
 
 Game.prototype.startGame = function startGame() {
@@ -225,6 +225,21 @@ Game.prototype.updateView = function updateView() {
     });
   });
 };
+
+Game.prototype.buildView = function buildView() {
+  this.observerList.forEach((observer) => {
+    observer.build({
+      board: this.board,
+      turn: this.players[this.itsXsTurn].type,
+      winner: this.winner,
+      players: this.players,
+      isGameRunning: this.isGameRunning,
+      width: this.width,
+    });
+  });
+};
+
+
 Game.prototype.addTic = function addTic(x, y) {
   const canAddTic = !this.board[y][x].isTaken && this.isGameRunning;
 
@@ -273,6 +288,7 @@ const controller = {
 
       if (canBoardBeResized) {
         game.generateBoard(draggedElement.value);
+        game.updateView();
       }
     });
   },
@@ -302,7 +318,7 @@ function generateRowToElements(row, y, isGameRunning) {
 }
 
 const htmlView = {
-  update: (state) => {
+  build: (state) => {
     const container = document.getElementById('tictactoe');
 
     while (container.firstChild) {
@@ -339,6 +355,7 @@ const htmlView = {
 
     const resetButton = document.createElement('button');
     resetButton.classList.add('button', 'button-reset');
+    resetButton.setAttribute('id', 'button-reset');
 
     if (state.isGameRunning) {
       resetButton.textContent = 'Clear';
@@ -374,16 +391,57 @@ const htmlView = {
     });
 
     const winnerElement = document.createElement('h2');
+    winnerElement.setAttribute('id', 'score-winner');
+    container.appendChild(winnerElement);
+  },
 
+  update: (state) => {
+    const turnElement = document.getElementById('turn');
+    turnElement.textContent = `${state.turn}`;
+
+    const scoreP1 = document.getElementById('score-p1');
+    scoreP1.textContent = `${state.players.true.type}: ${state.players.true.score}`;
+
+    const scoreP2 = document.getElementById('score-p2');
+    scoreP2.textContent = `${state.players.false.type}: ${state.players.false.score}`;
+
+    const resetButton = document.getElementById('button-reset');
+
+    if (state.isGameRunning) {
+      resetButton.textContent = 'Clear';
+    } else {
+      resetButton.textContent = 'Start new game';
+    }
+    const slider = document.getElementById('slider-adjust-size');
+    slider.setAttribute('value', state.width);
+
+    if (state.isGameRunning) {
+      slider.classList.add('slider-inactive');
+      slider.disabled = true;
+    } else {
+      slider.classList.remove('slider-inactive');
+      slider.disabled = false;
+    }
+
+    const table = document.getElementById('table-tictactoe');
+    while (table.firstChild) {
+      table.removeChild(table.firstChild);
+    }
+    state.board.forEach((row, y) => {
+      table.appendChild(generateRowToElements(row, y, state.isGameRunning));
+    });
+
+    const winnerElement = document.getElementById('score-winner');
     if (state.winner !== undefined) {
       winnerElement.textContent = `The winner is ${state.winner}!`;
+    } else {
+      winnerElement.textContent = '';
     }
-    container.appendChild(winnerElement);
   },
 };
 
 const game = new Game(3, 3);
 game.addObserver(htmlView);
 game.start();
-game.updateView();
+game.buildView();
 controller.listen(game);
