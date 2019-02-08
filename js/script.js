@@ -161,11 +161,13 @@ function Game(width, tilesNeededToWin) {
     false: { type: 'O', score: 0 },
   };
   this.winner = undefined;
+  this.showWinnerScreen = false;
 }
 
 Game.prototype.generateBoard = function generateBoard(width) {
   this.board = fill2DArray(width, width, Tile);
   this.width = width;
+  this.tilesNeededToWin = width;
   this.winner = undefined;
   // this.updateView();
 };
@@ -206,6 +208,8 @@ Game.prototype.updateView = function updateView() {
       players: this.players,
       isGameRunning: this.isGameRunning,
       width: this.width,
+      showWinnerScreen: this.showWinnerScreen,
+      tilesNeededToWin: this.tilesNeededToWin,
     });
   });
 };
@@ -219,6 +223,8 @@ Game.prototype.buildView = function buildView() {
       players: this.players,
       isGameRunning: this.isGameRunning,
       width: this.width,
+      showWinnerScreen: this.showWinnerScreen,
+      tilesNeededToWin: this.tilesNeededToWin,
     });
   });
 };
@@ -235,11 +241,20 @@ Game.prototype.addTic = function addTic(x, y) {
     const possibleWinner = findWinner(allRowsToCheck, this.tilesNeededToWin);
     if (possibleWinner != null) {
       this.winner = this.players[this.itsXsTurn].type;
+      this.showWinnerScreen = true;
       this.players[this.itsXsTurn].score += 1;
       this.isGameRunning = false;
     }
     this.itsXsTurn = !this.itsXsTurn;
     this.updateView();
+  }
+};
+
+Game.prototype.setTilesNeededToWin = function setTilesNeededToWin(val) {
+  if (val > 3 && val <= this.width) {
+    this.tilesNeededToWin = val;
+  } else {
+    throw new Error('game.tilesNeededToWin cannot be less than 3 or greater than game.width');
   }
 };
 
@@ -262,18 +277,41 @@ const controller = {
         }
       }
 
+      if (clickedElement.getAttribute('id') === 'score-winner') {
+        game.showWinnerScreen = false;
+        game.updateView();
+      }
+
       if (clickedElement.classList.contains('button-restart')) {
         game.restart();
       }
     });
     gameComponent.addEventListener('input', (event) => {
-      const draggedElement = event.target;
-      const canBoardBeResized = draggedElement.id === 'slider-adjust-size' && !game.isGameRunning;
+      const inputElement = event.target;
+      const canBoardBeResized = inputElement.id === 'slider-adjust-size' && !game.isGameRunning;
 
       if (canBoardBeResized) {
-        game.generateBoard(draggedElement.value);
-        game.updateView();
+        game.generateBoard(inputElement.value);
       }
+
+      // if (inputElement.getAttribute('id') === 'input-tilesinarow' && inputElement.value.match(/^[0-9]+$/) != null) {
+      //   game.setTilesNeededToWin(inputElement.value);
+      // }
+
+      // const currentInputTilesNeededToWin = document.getElementById('input-tilesinarow');
+
+      // if (currentInputTilesNeededToWin.value.match(/^[0-9]+$/) != null) {
+
+      //   if (currentInputTilesNeededToWin.value > game.tilesNeededToWin) {
+      //     game.setTilesNeededToWin(game.width);
+      //   }
+
+      //   if (currentInputTilesNeededToWin.value < game.tilesNeededToWin) {
+      //     game.setTilesNeededToWin(3);
+      //   }
+      // }
+
+      game.updateView();
     });
   },
 };
@@ -298,8 +336,6 @@ function generateRowToElements(row, y, isGameRunning) {
         throw new Error(`Tile at position ${x} ${y} is not X, O or empty.`);
       }
 
-      tileImg.width = '60';
-      tileImg.height = '60';
       tileElement.appendChild(tileImg);
     }
 
@@ -318,12 +354,14 @@ function generateRowToElements(row, y, isGameRunning) {
 
 const htmlView = {
   build: (state) => {
+    console.log(state);
+
     const container = document.getElementById('tictactoe');
+    container.setAttribute('class', 'noselect');
 
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
-
     const header = document.createElement('h1');
     header.textContent = 'Tic-tac-toe 2.0';
     container.appendChild(header);
@@ -374,6 +412,18 @@ const htmlView = {
     restartButton.textContent = 'Restart';
     gameInfoElement.appendChild(restartButton);
 
+    // const inputDiv = document.createElement('div');
+    // inputDiv.setAttribute('id', 'wrapper-input-tilesinarow');
+    // const inputTilesInARow = document.createElement('input');
+    // inputTilesInARow.setAttribute('type', 'number');
+    // inputTilesInARow.setAttribute('name', 'tiles-in-a-row-to-win');
+    // inputTilesInARow.setAttribute('value', state.tilesNeededToWin);
+    // inputTilesInARow.setAttribute('min', 3);
+    // inputTilesInARow.setAttribute('max', state.width);
+    // inputTilesInARow.setAttribute('id', 'input-tilesinarow');
+    // inputDiv.appendChild(inputTilesInARow);
+    // gameInfoElement.appendChild(inputDiv);
+
     const sliderContainer = document.createElement('div');
     sliderContainer.setAttribute('id', 'slidercontainer');
     container.appendChild(sliderContainer);
@@ -381,7 +431,7 @@ const htmlView = {
     const slider = document.createElement('input');
     slider.setAttribute('type', 'range');
     slider.setAttribute('min', '3');
-    slider.setAttribute('max', '10');
+    slider.setAttribute('max', '8');
     slider.setAttribute('value', state.width);
     slider.setAttribute('class', 'slider');
     slider.setAttribute('id', 'slider-adjust-size');
@@ -394,10 +444,6 @@ const htmlView = {
     state.board.forEach((row, y) => {
       table.appendChild(generateRowToElements(row, y, state.isGameRunning));
     });
-
-    const winnerElement = document.createElement('h2');
-    winnerElement.setAttribute('id', 'score-winner');
-    container.appendChild(winnerElement);
   },
 
   update: (state) => {
@@ -434,6 +480,21 @@ const htmlView = {
       slider.disabled = false;
     }
 
+    // const inputDiv = document.getElementById('wrapper-input-tilesinarow');
+
+    // while (inputDiv.firstChild) {
+    //   inputDiv.removeChild(inputDiv.firstChild);
+    // }
+
+    // const inputTilesInARow = document.createElement('input');
+    // inputTilesInARow.setAttribute('type', 'number');
+    // inputTilesInARow.setAttribute('name', 'tiles-in-a-row-to-win');
+    // inputTilesInARow.setAttribute('value', state.tilesNeededToWin);
+    // inputTilesInARow.setAttribute('min', 3);
+    // inputTilesInARow.setAttribute('max', state.width);
+    // inputTilesInARow.setAttribute('id', 'input-tilesinarow');
+    // inputDiv.appendChild(inputTilesInARow);
+
     const table = document.getElementById('table-tictactoe');
     while (table.firstChild) {
       table.removeChild(table.firstChild);
@@ -442,11 +503,16 @@ const htmlView = {
       table.appendChild(generateRowToElements(row, y, state.isGameRunning));
     });
 
-    const winnerElement = document.getElementById('score-winner');
-    if (state.winner !== undefined) {
+    if (state.winner !== undefined && state.showWinnerScreen === true) {
+      const container = document.getElementById('tictactoe');
+      const winnerElement = document.createElement('h1');
+      winnerElement.setAttribute('id', 'score-winner');
       winnerElement.textContent = `The winner is ${state.winner}!`;
-    } else {
-      winnerElement.textContent = '';
+      container.appendChild(winnerElement);
+    }
+    const winnerElementExists = document.getElementById('score-winner');
+    if (winnerElementExists && !state.showWinnerScreen) {
+      winnerElementExists.remove();
     }
   },
 };

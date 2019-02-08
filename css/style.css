@@ -1,9 +1,15 @@
 /* Color style can be found here:
 https://coolors.co/27baff-171738-ff3366-2e1760-f6f7f8 */
 
+html {
+  margin: 0;
+}
+
 body {
   background-color: #27BAFF;
   background-image: url('../img/bg_xo.png');
+  margin: 0;
+  padding: 0;
 }
 
 article {
@@ -15,9 +21,10 @@ article {
   display: inline-block;
   height: 100%;
   padding: 2rem;
+  padding-bottom: 0;
 }
 
-article h1 {
+h1 {
   color: white;
   font-size: 2.8rem;
   font-family: 'Pacifico', cursive;
@@ -46,6 +53,8 @@ article h1 {
   padding: 1rem;
   position: relative;
   overflow: hidden;
+
+  border-radius: 0.2em;
 }
 
 .tile img {
@@ -60,7 +69,7 @@ article h1 {
 #gameinfo {
   display: flex;
   height: 100px;
-  min-width: 800px;
+  min-width: 1000px;
   justify-content: left;
   margin: 2rem;
   margin-left: 1rem;
@@ -138,6 +147,19 @@ article h1 {
   padding-left: 1rem;
   text-align: center;
   vertical-align: middle;
+  border-radius: 0.2em;
+}
+
+#input-tilesinarow {
+  background: #F6F7F8;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 1.5rem;
+  border: none;
+  margin-top: 0;
+  border-radius: 0.2em;
+  width: 6rem;
+
 }
 
 #turn {
@@ -147,6 +169,7 @@ article h1 {
   text-align: center;
   vertical-align: middle;
   background: #F6F7F8;
+  border-radius: 0.2em;
 }
 
 #turn img {
@@ -158,6 +181,25 @@ article h1 {
   margin: 1rem;
 }
 
+#score-winner {
+  color: white;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: rgba(0,0,0, 0.7);
+  height: 100%;
+  width: 100%;
+
+  padding-left: 10rem;
+  padding-top: 20rem;
+
+  margin: 0;
+  text-align: left;
+  vertical-align: top;
+
+  font-size: 4rem;
+
+}
 
 .button {
 	background-color:#F6F7F8;
@@ -181,4 +223,14 @@ article h1 {
 .button:active {
 	position:relative;
 	top:1px;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
