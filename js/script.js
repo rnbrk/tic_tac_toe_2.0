@@ -15,22 +15,6 @@ function fill2DArray(rows, columns, Func) {
   return board;
 }
 
-// function fill2DArrayTest(rows, columns) {
-//   const board = [];
-//   for (let y = 0; y < rows; y += 1) {
-//     const row = [];
-//     for (let x = 0; x < columns; x += 1) {
-//       if (y === 1) {
-//         row.push(new Tile('X'));
-//       } else {
-//         row.push(new Tile());
-//       }
-//     }
-//     board.push(row);
-//   }
-//   return board;
-// }
-
 function flip2DArrayHorizontal(matrix) {
   return matrix.map(row => row.map((v, index) => row[row.length - index - 1]));
 }
@@ -73,7 +57,6 @@ function getAllDiagonals(matrix) {
 }
 
 function getAllCombinationsOf2DArray(matrix) {
-  // All rows
   const allRows = matrix.map(row => row);
   const allColumns = matrix[0].map((column, index) => matrix.map(row => row[index]));
   const allDiagonals = getAllDiagonals(matrix);
@@ -189,6 +172,7 @@ Game.prototype.generateBoard = function generateBoard(width) {
 
 Game.prototype.startGame = function startGame() {
   this.isGameRunning = true;
+  this.winner = undefined;
   this.board = fill2DArray(this.width, this.width, Tile);
   this.updateView();
 };
