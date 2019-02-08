@@ -286,7 +286,22 @@ function generateRowToElements(row, y, isGameRunning) {
 
   row.forEach((tile, x) => {
     const tileElement = document.createElement('td');
-    tileElement.textContent = tile.type;
+    // tileElement.textContent = tile.type;
+
+    if (tile.type) {
+      const tileImg = document.createElement('img');
+      if (tile.type === 'X') {
+        tileImg.setAttribute('src', '../img/x.png');
+      } else if (tile.type === 'O') {
+        tileImg.setAttribute('src', '../img/o.png');
+      } else {
+        throw new Error(`Tile at position ${x} ${y} is not X, O or empty.`);
+      }
+
+      tileImg.width = '60';
+      tileImg.height = '60';
+      tileElement.appendChild(tileImg);
+    }
 
     if (isGameRunning) {
       tileElement.classList.add('tile', 'tile-active');
@@ -319,7 +334,17 @@ const htmlView = {
 
     const turnElement = document.createElement('div');
     turnElement.setAttribute('id', 'turn');
-    turnElement.textContent = `${state.turn}`;
+
+    const turnImg = document.createElement('img');
+    turnImg.setAttribute('id', 'turn-img');
+    if (state.turn === 'X') {
+      turnImg.setAttribute('src', '../img/x.png');
+    } else if (state.turn === 'O') {
+      turnImg.setAttribute('src', '../img/o.png');
+    } else {
+      throw new Error('Tile at turn indicator is not X, O or empty.');
+    }
+    turnElement.appendChild(turnImg);
     gameInfoElement.appendChild(turnElement);
 
     const scoreElement = document.createElement('div');
@@ -376,8 +401,14 @@ const htmlView = {
   },
 
   update: (state) => {
-    const turnElement = document.getElementById('turn');
-    turnElement.textContent = `${state.turn}`;
+    const turnImg = document.getElementById('turn-img');
+    if (state.turn === 'X') {
+      turnImg.setAttribute('src', '../img/x.png');
+    } else if (state.turn === 'O') {
+      turnImg.setAttribute('src', '../img/o.png');
+    } else {
+      throw new Error('Tile at turn indicator is not X, O or empty.');
+    }
 
     const scoreP1 = document.getElementById('score-p1');
     scoreP1.textContent = `${state.players.true.type}: ${state.players.true.score}`;

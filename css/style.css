@@ -3,25 +3,23 @@ https://coolors.co/27baff-171738-ff3366-2e1760-f6f7f8 */
 
 body {
   background-color: #27BAFF;
-  background-image: url('../img/bg_xo_alpha.png');
+  background-image: url('../img/bg_xo.png');
 }
 
 article {
   font-family: 'Anonymous Pro', monospace;
-  font-size: 10px;
   font-weight: bold;
   color: #2E1760;
   min-width: 300px;
   margin: 0;
   display: inline-block;
-  /* background-color: #27BAFF; */
-  
+  height: 100%;
   padding: 2rem;
 }
 
 article h1 {
   color: white;
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-family: 'Pacifico', cursive;
   letter-spacing: 0.2rem;
   margin: 0;
@@ -48,6 +46,11 @@ article h1 {
   padding: 1rem;
   position: relative;
   overflow: hidden;
+}
+
+.tile img {
+  width: 4.5rem;
+  height: 4.5rem;
 }
 
 .tile-active:hover {
@@ -142,8 +145,13 @@ article h1 {
   width: 100px;
   font-size: 3rem;
   text-align: center;
-  vertical-align: center;
+  vertical-align: middle;
   background: #F6F7F8;
+}
+
+#turn img {
+  width: 3.5rem;
+  height: 3.5rem;
 }
 
 #score * {
@@ -161,7 +169,7 @@ article h1 {
   cursor:pointer;
   font-family: 'Anonymous Pro', monospace;
   font-weight: bold;
-	color:#273043;
+	color: #2E1760;
 	font-size:1.3rem;
 	padding:16px 31px;
   text-decoration:none;
