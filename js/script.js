@@ -340,17 +340,13 @@ const htmlView = {
     const resetButton = document.createElement('button');
     resetButton.classList.add('button', 'button-reset');
     resetButton.setAttribute('id', 'button-reset');
+    resetButton.textContent = 'Play';
 
-    if (state.isGameRunning) {
-      resetButton.textContent = 'Clear';
-    } else {
-      resetButton.textContent = 'Start new game';
-    }
     gameInfoElement.appendChild(resetButton);
 
     const restartButton = document.createElement('button');
     restartButton.classList.add('button', 'button-restart');
-    restartButton.textContent = 'Restart all';
+    restartButton.textContent = 'Restart';
     gameInfoElement.appendChild(restartButton);
 
     const sliderContainer = document.createElement('div');
@@ -394,7 +390,7 @@ const htmlView = {
     if (state.isGameRunning) {
       resetButton.textContent = 'Clear';
     } else {
-      resetButton.textContent = 'Start new game';
+      resetButton.textContent = 'Play';
     }
     const slider = document.getElementById('slider-adjust-size');
     slider.setAttribute('value', state.width);
