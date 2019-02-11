@@ -57,11 +57,6 @@ h1 {
   border-radius: 0.2em;
 }
 
-.tile img {
-  width: 4.5rem;
-  height: 4.5rem;
-}
-
 .tile-active:hover {
   background: #FF3366;
 }
@@ -95,7 +90,7 @@ h1 {
 
 #slider-adjust-size {
   display: block;
-  width: 300px;
+  width: 37rem;
   margin-left: 1rem;
 }
 
@@ -166,15 +161,15 @@ h1 {
   height: 100%;
   width: 100px;
   font-size: 3rem;
-  text-align: center;
-  vertical-align: middle;
   background: #F6F7F8;
   border-radius: 0.2em;
 }
 
-#turn img {
-  width: 3.5rem;
-  height: 3.5rem;
+#turn img, .tile img {
+  text-align:center;
+  width:100%;
+  display:block;
+  margin:auto;
 }
 
 #score * {
