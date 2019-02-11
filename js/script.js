@@ -63,70 +63,6 @@ function getAllCombinationsOf2DArray(matrix) {
   return result;
 }
 
-function findWinner(matrix, tilesNeededToWin) {
-  function findWinnerInRow(row) {
-    let longestStreak = 0;
-    let typeOfLongestStreak;
-
-    let currentStreak = 0;
-    let typeOfCurrentStreak;
-
-    row.forEach((tile, index) => {
-      const previousTile = row[index - 1];
-
-      // if we find an empty tile
-      if (!tile.isTaken) {
-        currentStreak = 0;
-        typeOfCurrentStreak = undefined;
-      }
-
-      // if it is the first tile
-      if (index === 0) {
-        currentStreak = 1;
-        typeOfCurrentStreak = tile;
-        longestStreak = currentStreak;
-        typeOfLongestStreak = typeOfCurrentStreak;
-      } else {
-        // if the tile is different from the previous one
-        if (index > 0 && tile.type !== previousTile.type && tile.isTaken) {
-          currentStreak = 1;
-          typeOfCurrentStreak = tile;
-        }
-
-        // if the tile is the same
-        if (
-          previousTile === undefined
-          || (tile.type === previousTile.type && tile.isTaken)
-        ) {
-          currentStreak += 1;
-          typeOfCurrentStreak = tile;
-        }
-      }
-
-      // Check if we have found a new longest streak
-      if (currentStreak > longestStreak) {
-        longestStreak = currentStreak;
-        typeOfLongestStreak = typeOfCurrentStreak;
-      }
-    });
-
-    if (longestStreak >= tilesNeededToWin) {
-      return typeOfLongestStreak;
-    }
-
-    return null;
-  }
-
-  for (let i = 0; i < matrix.length; i += 1) {
-    const row = matrix[i];
-    const winner = findWinnerInRow(row, tilesNeededToWin);
-    if (winner !== null) {
-      return winner;
-    }
-  }
-  return null;
-}
-
 function Tile(type = '') {
   const proto = this.constructor.prototype;
 
@@ -141,10 +77,6 @@ function Tile(type = '') {
     return this.type;
   };
 }
-
-// Tile.prototype.toString = function toString() {
-//   return this.type;
-// };
 
 // GAME OBJECT
 
@@ -233,6 +165,71 @@ function Game() {
       });
     });
   };
+
+  proto.findWinner = function findWinner(matrix, tilesNeededToWin) {
+    function findWinnerInRow(row) {
+      let longestStreak = 0;
+      let typeOfLongestStreak;
+
+      let currentStreak = 0;
+      let typeOfCurrentStreak;
+
+      row.forEach((tile, index) => {
+        const previousTile = row[index - 1];
+
+        // if we find an empty tile
+        if (!tile.isTaken) {
+          currentStreak = 0;
+          typeOfCurrentStreak = undefined;
+        }
+
+        // if it is the first tile
+        if (index === 0) {
+          currentStreak = 1;
+          typeOfCurrentStreak = tile;
+          longestStreak = currentStreak;
+          typeOfLongestStreak = typeOfCurrentStreak;
+        } else {
+          // if the tile is different from the previous one
+          if (index > 0 && tile.type !== previousTile.type && tile.isTaken) {
+            currentStreak = 1;
+            typeOfCurrentStreak = tile;
+          }
+
+          // if the tile is the same
+          if (
+            previousTile === undefined
+            || (tile.type === previousTile.type && tile.isTaken)
+          ) {
+            currentStreak += 1;
+            typeOfCurrentStreak = tile;
+          }
+        }
+
+        // Check if we have found a new longest streak
+        if (currentStreak > longestStreak) {
+          longestStreak = currentStreak;
+          typeOfLongestStreak = typeOfCurrentStreak;
+        }
+      });
+
+      if (longestStreak >= tilesNeededToWin) {
+        return typeOfLongestStreak;
+      }
+
+      return null;
+    }
+
+    for (let i = 0; i < matrix.length; i += 1) {
+      const row = matrix[i];
+      const winner = findWinnerInRow(row, tilesNeededToWin);
+      if (winner !== null) {
+        return winner;
+      }
+    }
+    return null;
+  };
+
   proto.addTic = function addTic(x, y) {
     const canAddTic = !this.board[y][x].isTaken && this.isGameRunning;
 
@@ -242,7 +239,7 @@ function Game() {
       this.board[y][x].isTaken = true;
 
       const allRowsToCheck = getAllCombinationsOf2DArray(this.board);
-      const possibleWinner = findWinner(allRowsToCheck, this.tilesNeededToWin);
+      const possibleWinner = this.findWinner(allRowsToCheck, this.tilesNeededToWin);
       if (possibleWinner != null) {
         this.winner = this.players[this.itsXsTurn].type;
         this.showEndScreen = true;
