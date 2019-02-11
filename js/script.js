@@ -24,8 +24,7 @@ function getAllDiagonals(matrix) {
     let column = startColumn;
     const diagonal = [];
 
-    const tileExists = row > Math.max(startRow, startColumn) || column < 0;
-    while (tileExists) {
+    while (!(row > Math.max(startRow, startColumn) || column < 0)) {
       diagonal.push(matrix[row][column]);
       row += 1;
       column -= 1;
@@ -64,60 +63,60 @@ function getAllCombinationsOf2DArray(matrix) {
   return result;
 }
 
-function findWinnerInRow(row, tilesNeededToWin) {
-  let longestStreak = 0;
-  let typeOfLongestStreak;
+function findWinner(matrix, tilesNeededToWin) {
+  function findWinnerInRow(row) {
+    let longestStreak = 0;
+    let typeOfLongestStreak;
 
-  let currentStreak = 0;
-  let typeOfCurrentStreak;
+    let currentStreak = 0;
+    let typeOfCurrentStreak;
 
-  row.forEach((tile, index) => {
-    const previousTile = row[index - 1];
+    row.forEach((tile, index) => {
+      const previousTile = row[index - 1];
 
-    // if we find an empty tile
-    if (!tile.isTaken) {
-      currentStreak = 0;
-      typeOfCurrentStreak = undefined;
-    }
+      // if we find an empty tile
+      if (!tile.isTaken) {
+        currentStreak = 0;
+        typeOfCurrentStreak = undefined;
+      }
 
-    // if it is the first tile
-    if (index === 0) {
-      currentStreak = 1;
-      typeOfCurrentStreak = tile;
-      longestStreak = currentStreak;
-      typeOfLongestStreak = typeOfCurrentStreak;
-    } else {
-      // if the tile is different from the previous one
-      if (index > 0 && tile.type !== previousTile.type && tile.isTaken) {
+      // if it is the first tile
+      if (index === 0) {
         currentStreak = 1;
         typeOfCurrentStreak = tile;
+        longestStreak = currentStreak;
+        typeOfLongestStreak = typeOfCurrentStreak;
+      } else {
+        // if the tile is different from the previous one
+        if (index > 0 && tile.type !== previousTile.type && tile.isTaken) {
+          currentStreak = 1;
+          typeOfCurrentStreak = tile;
+        }
+
+        // if the tile is the same
+        if (
+          previousTile === undefined
+          || (tile.type === previousTile.type && tile.isTaken)
+        ) {
+          currentStreak += 1;
+          typeOfCurrentStreak = tile;
+        }
       }
 
-      // if the tile is the same
-      if (
-        previousTile === undefined
-        || (tile.type === previousTile.type && tile.isTaken)
-      ) {
-        currentStreak += 1;
-        typeOfCurrentStreak = tile;
+      // Check if we have found a new longest streak
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+        typeOfLongestStreak = typeOfCurrentStreak;
       }
+    });
+
+    if (longestStreak >= tilesNeededToWin) {
+      return typeOfLongestStreak;
     }
 
-    // Check if we have found a new longest streak
-    if (currentStreak > longestStreak) {
-      longestStreak = currentStreak;
-      typeOfLongestStreak = typeOfCurrentStreak;
-    }
-  });
-
-  if (longestStreak >= tilesNeededToWin) {
-    return typeOfLongestStreak;
+    return null;
   }
 
-  return null;
-}
-
-function findWinner(matrix, tilesNeededToWin) {
   for (let i = 0; i < matrix.length; i += 1) {
     const row = matrix[i];
     const winner = findWinnerInRow(row, tilesNeededToWin);
@@ -129,27 +128,33 @@ function findWinner(matrix, tilesNeededToWin) {
 }
 
 function Tile(type = '') {
+  const proto = this.constructor.prototype;
+
   if (typeof type !== 'string') {
     throw new Error('Type of tile can only be a string.');
   }
 
   this.type = type;
   this.isTaken = Boolean(this.type);
+
+  proto.toString = function toString() {
+    return this.type;
+  };
 }
 
-Tile.prototype.toString = function toString() {
-  return this.type;
-};
+// Tile.prototype.toString = function toString() {
+//   return this.type;
+// };
 
 // GAME OBJECT
 
-function Game(width, tilesNeededToWin) {
-  this.width = width;
-  this.tilesNeededToWin = tilesNeededToWin;
+function Game() {
+  this.width = 3;
+  this.tilesNeededToWin = this.width;
   this.amountOfTurns = 0;
   this.observerList = [];
   this.start = function start() {
-    this.generateBoard(width);
+    this.generateBoard(this.width);
   };
   this.isGameRunning = false;
   this.itsXsTurn = true;
@@ -159,121 +164,112 @@ function Game(width, tilesNeededToWin) {
   };
   this.winner = undefined;
   this.showEndScreen = false;
-}
 
-Game.prototype.generateBoard = function generateBoard(width) {
-  this.board = fill2DArray(width, width, Tile);
-  this.width = width;
-  this.tilesNeededToWin = width;
-  this.winner = undefined;
-};
+  const proto = this.constructor.prototype;
 
-Game.prototype.startGame = function startGame() {
-  this.isGameRunning = true;
-  this.winner = undefined;
-  this.board = fill2DArray(this.width, this.width, Tile);
-  this.updateView();
-};
-
-Game.prototype.reset = function reset() {
-  this.board = fill2DArray(this.width, this.width, Tile);
-  this.winner = undefined;
-  this.isGameRunning = false;
-  this.amountOfTurns = 0;
-  this.updateView();
-};
-
-Game.prototype.restart = function restart() {
-  this.reset();
-  this.players = {
-    true: { type: 'X', score: 0 },
-    false: { type: 'O', score: 0 },
+  proto.generateBoard = function generateBoard(valWidth) {
+    this.board = fill2DArray(valWidth, valWidth, Tile);
+    this.width = valWidth;
+    this.tilesNeededToWin = valWidth;
+    this.winner = undefined;
   };
-  this.itsXsTurn = true;
-  this.amountOfTurns = 0;
-  this.updateView();
-};
-
-Game.prototype.gameIsDraw = function gameIsDraw() {
-  return this.winner === undefined && this.amountOfTurns >= (this.width * this.width);
-};
-
-Game.prototype.addObserver = function addObserver(observer) {
-  this.observerList.push(observer);
-};
-
-Game.prototype.setShowEndScreen = function setShowEndScreen(boolean) {
-  this.showEndScreen = boolean;
-};
-
-Game.prototype.updateView = function updateView() {
-  this.observerList.forEach((observer) => {
-    observer.update({
-      board: this.board,
-      turn: this.players[this.itsXsTurn].type,
-      winner: this.winner,
-      players: this.players,
-      isGameRunning: this.isGameRunning,
-      width: this.width,
-      showEndScreen: this.showEndScreen,
-      tilesNeededToWin: this.tilesNeededToWin,
-    });
-  });
-};
-
-Game.prototype.buildView = function buildView() {
-  this.observerList.forEach((observer) => {
-    observer.build({
-      board: this.board,
-      turn: this.players[this.itsXsTurn].type,
-      winner: this.winner,
-      players: this.players,
-      isGameRunning: this.isGameRunning,
-      width: this.width,
-      showEndScreen: this.showEndScreen,
-      tilesNeededToWin: this.tilesNeededToWin,
-    });
-  });
-};
-
-
-Game.prototype.addTic = function addTic(x, y) {
-  const canAddTic = !this.board[y][x].isTaken && this.isGameRunning;
-
-  if (canAddTic) {
-    this.amountOfTurns += 1;
-    this.board[y][x].type = this.players[this.itsXsTurn].type;
-    this.board[y][x].isTaken = true;
-
-    const allRowsToCheck = getAllCombinationsOf2DArray(this.board);
-    const possibleWinner = findWinner(allRowsToCheck, this.tilesNeededToWin);
-    if (possibleWinner != null) {
-      this.winner = this.players[this.itsXsTurn].type;
-      this.showEndScreen = true;
-      this.players[this.itsXsTurn].score += 1;
-      this.amountOfTurns = 0;
-      this.isGameRunning = false;
-    }
-
-    if (this.gameIsDraw()) {
-      this.showEndScreen = true;
-      this.amountOfTurns = 0;
-      this.isGameRunning = false;
-      Object.keys(this.players).forEach((element) => { this.players[element].score += 1; });
-    }
-
-    this.itsXsTurn = !this.itsXsTurn;
+  proto.startGame = function startGame() {
+    this.isGameRunning = true;
+    this.winner = undefined;
+    this.board = fill2DArray(this.width, this.width, Tile);
     this.updateView();
-  }
-};
+  };
+  proto.reset = function reset() {
+    this.board = fill2DArray(this.width, this.width, Tile);
+    this.winner = undefined;
+    this.isGameRunning = false;
+    this.amountOfTurns = 0;
+    this.updateView();
+  };
+  proto.restart = function restart() {
+    this.reset();
+    this.players = {
+      true: { type: 'X', score: 0 },
+      false: { type: 'O', score: 0 },
+    };
+    this.itsXsTurn = true;
+    this.amountOfTurns = 0;
+    this.updateView();
+  };
+  proto.gameIsDraw = function gameIsDraw() {
+    return this.winner === undefined && this.amountOfTurns >= (this.width * this.width);
+  };
+  proto.addObserver = function addObserver(observer) {
+    this.observerList.push(observer);
+  };
+  proto.setShowEndScreen = function setShowEndScreen(boolean) {
+    this.showEndScreen = boolean;
+  };
+  proto.updateView = function updateView() {
+    this.observerList.forEach((observer) => {
+      observer.update({
+        board: this.board,
+        turn: this.players[this.itsXsTurn].type,
+        winner: this.winner,
+        players: this.players,
+        isGameRunning: this.isGameRunning,
+        width: this.width,
+        showEndScreen: this.showEndScreen,
+        tilesNeededToWin: this.tilesNeededToWin,
+      });
+    });
+  };
+  proto.buildView = function buildView() {
+    this.observerList.forEach((observer) => {
+      observer.build({
+        board: this.board,
+        turn: this.players[this.itsXsTurn].type,
+        winner: this.winner,
+        players: this.players,
+        isGameRunning: this.isGameRunning,
+        width: this.width,
+        showEndScreen: this.showEndScreen,
+        tilesNeededToWin: this.tilesNeededToWin,
+      });
+    });
+  };
+  proto.addTic = function addTic(x, y) {
+    const canAddTic = !this.board[y][x].isTaken && this.isGameRunning;
 
-Game.prototype.setTilesNeededToWin = function setTilesNeededToWin(val) {
-  if (val > 3 && val <= this.width) {
-    this.tilesNeededToWin = val;
-  } else {
-    throw new Error('game.tilesNeededToWin cannot be less than 3 or greater than game.width');
-  }
-};
+    if (canAddTic) {
+      this.amountOfTurns += 1;
+      this.board[y][x].type = this.players[this.itsXsTurn].type;
+      this.board[y][x].isTaken = true;
+
+      const allRowsToCheck = getAllCombinationsOf2DArray(this.board);
+      const possibleWinner = findWinner(allRowsToCheck, this.tilesNeededToWin);
+      if (possibleWinner != null) {
+        this.winner = this.players[this.itsXsTurn].type;
+        this.showEndScreen = true;
+        this.players[this.itsXsTurn].score += 1;
+        this.amountOfTurns = 0;
+        this.isGameRunning = false;
+      }
+
+      if (this.gameIsDraw()) {
+        this.showEndScreen = true;
+        this.amountOfTurns = 0;
+        this.isGameRunning = false;
+        Object.keys(this.players).forEach((element) => { this.players[element].score += 1; });
+      }
+
+      this.itsXsTurn = !this.itsXsTurn;
+      this.updateView();
+    }
+  };
+  proto.setTilesNeededToWin = function setTilesNeededToWin(val) {
+    if (val > 3 && val <= this.width) {
+      this.tilesNeededToWin = val;
+    } else {
+      throw new Error('game.tilesNeededToWin cannot be less than 3 or greater than game.width');
+    }
+  };
+}
 
 // Controller
 
@@ -492,7 +488,7 @@ const htmlView = {
   },
 };
 
-const game = new Game(3, 3);
+const game = new Game();
 game.addObserver(htmlView);
 game.start();
 game.buildView();
