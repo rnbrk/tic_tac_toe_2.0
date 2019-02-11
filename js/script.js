@@ -1,7 +1,6 @@
-// tic tac toe web app
-
+/* eslint-disable lines-around-directive */
+// eslint-disable-next-line strict
 'use strict';
-
 
 function fill2DArray(rows, columns, Func) {
   const board = [];
@@ -20,7 +19,7 @@ function flip2DArrayHorizontal(matrix) {
 }
 
 function getAllDiagonals(matrix) {
-  function iterateOneDiagonal(matrix, startRow, startColumn) {
+  function iterateOneDiagonal(startRow, startColumn) {
     let row = startRow;
     let column = startColumn;
     const diagonal = [];
@@ -43,13 +42,13 @@ function getAllDiagonals(matrix) {
 
   // top horizontal row
   for (let i = 0; i < amountOfSquares; i += 1) {
-    const diagonal = iterateOneDiagonal(matrix, 0, i);
+    const diagonal = iterateOneDiagonal(0, i);
     diagonals.push(diagonal);
   }
 
   // right vertical row starts at + 1
   for (let i = 1; i < amountOfSquares; i += 1) {
-    const diagonal = iterateOneDiagonal(matrix, i, amountOfSquares - 1);
+    const diagonal = iterateOneDiagonal(i, amountOfSquares - 1);
     diagonals.push(diagonal);
   }
 
@@ -170,7 +169,6 @@ Game.prototype.generateBoard = function generateBoard(width) {
   this.width = width;
   this.tilesNeededToWin = width;
   this.winner = undefined;
-  // this.updateView();
 };
 
 Game.prototype.startGame = function startGame() {
@@ -206,6 +204,11 @@ Game.prototype.gameIsDraw = function gameIsDraw() {
 Game.prototype.addObserver = function addObserver(observer) {
   this.observerList.push(observer);
 };
+
+Game.prototype.setShowEndScreen = function setShowEndScreen(boolean) {
+  this.showEndScreen = boolean;
+};
+
 Game.prototype.updateView = function updateView() {
   this.observerList.forEach((observer) => {
     observer.update({
@@ -295,7 +298,7 @@ const controller = {
       }
 
       if (clickedElement.getAttribute('id') === 'score-winner') {
-        game.showEndScreen = false;
+        game.setShowEndScreen(false);
         game.updateView();
       }
 
