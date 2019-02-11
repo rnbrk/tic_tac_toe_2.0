@@ -1,8 +1,6 @@
 import { fill2DArray, getAllCombinationsOf2DArray } from './modules/2Darray.mjs';
 
 function Tile(type = '') {
-  const proto = this.constructor.prototype;
-
   if (typeof type !== 'string') {
     throw new Error('Type of tile can only be a string.');
   }
@@ -10,6 +8,7 @@ function Tile(type = '') {
   this.type = type;
   this.isTaken = Boolean(this.type);
 
+  const proto = this.constructor.prototype;
   proto.toString = function toString() {
     return this.type;
   };
@@ -17,11 +16,11 @@ function Tile(type = '') {
 
 // GAME OBJECT
 
-function Game() {
+function Game(observers) {
   this.width = 3;
   this.tilesNeededToWin = this.width;
   this.amountOfTurns = 0;
-  this.observerList = [];
+  this.observerList = Array.isArray(observers) ? observers : [observers];
   this.isGameRunning = false;
   this.itsXsTurn = true;
   this.players = {
@@ -33,37 +32,27 @@ function Game() {
 
   const proto = this.constructor.prototype;
 
-  proto.start = function start() {
-    this.generateBoard(this.width);
+  proto.generateBoard = function generateBoard() {
+    this.board = fill2DArray(this.width, this.width, Tile);
   };
-  proto.generateBoard = function generateBoard(valWidth) {
-    this.board = fill2DArray(valWidth, valWidth, Tile);
-    this.width = valWidth;
-    this.tilesNeededToWin = valWidth;
-    this.winner = undefined;
-  };
-  proto.startGame = function startGame() {
+  proto.startNewGame = function startNewGame() {
+    this.generateBoard();
     this.isGameRunning = true;
     this.winner = undefined;
-    this.board = fill2DArray(this.width, this.width, Tile);
-    this.updateView();
   };
-  proto.reset = function reset() {
-    this.board = fill2DArray(this.width, this.width, Tile);
+  proto.resetBoard = function resetBoard() {
+    this.generateBoard();
     this.winner = undefined;
     this.isGameRunning = false;
     this.amountOfTurns = 0;
-    this.updateView();
   };
-  proto.restart = function restart() {
-    this.reset();
+  proto.restartGame = function restartGame() {
+    this.resetBoard();
     this.players = {
       true: { type: 'X', score: 0 },
       false: { type: 'O', score: 0 },
     };
     this.itsXsTurn = true;
-    this.amountOfTurns = 0;
-    this.updateView();
   };
   proto.gameIsDraw = function gameIsDraw() {
     return this.winner === undefined && this.amountOfTurns >= (this.width * this.width);
@@ -73,6 +62,10 @@ function Game() {
   };
   proto.setShowEndScreen = function setShowEndScreen(boolean) {
     this.showEndScreen = boolean;
+  };
+  proto.setGameBoardSize = function setGameBoardSize(number) {
+    this.width = number;
+    this.tilesNeededToWin = number;
   };
   proto.updateView = function updateView() {
     this.observerList.forEach((observer) => {
@@ -88,83 +81,83 @@ function Game() {
       });
     });
   };
-  proto.buildView = function buildView() {
-    this.observerList.forEach((observer) => {
-      observer.build({
-        board: this.board,
-        turn: this.players[this.itsXsTurn].type,
-        winner: this.winner,
-        players: this.players,
-        isGameRunning: this.isGameRunning,
-        width: this.width,
-        showEndScreen: this.showEndScreen,
-        tilesNeededToWin: this.tilesNeededToWin,
-      });
+
+  proto.findWinnerInRow = function findWinnerInRow(row, tilesNeededToWin) {
+    let longestStreak = 0;
+    let typeOfLongestStreak;
+
+    let currentStreak = 0;
+    let typeOfCurrentStreak;
+
+    row.forEach((tile, index) => {
+      const previousTile = row[index - 1];
+
+      if (!tile.isTaken) {
+        currentStreak = 0;
+        typeOfCurrentStreak = undefined;
+      }
+
+      // if it is the first tile
+      if (index === 0) {
+        currentStreak = 1;
+        typeOfCurrentStreak = tile;
+        longestStreak = currentStreak;
+        typeOfLongestStreak = typeOfCurrentStreak;
+      } else {
+        // if the tile is different from the previous one
+        if (index > 0 && tile.type !== previousTile.type && tile.isTaken) {
+          currentStreak = 1;
+          typeOfCurrentStreak = tile;
+        }
+
+        // if the tile is the same
+        if (
+          previousTile === undefined
+          || (tile.type === previousTile.type && tile.isTaken)
+        ) {
+          currentStreak += 1;
+          typeOfCurrentStreak = tile;
+        }
+      }
+
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+        typeOfLongestStreak = typeOfCurrentStreak;
+      }
     });
+
+    if (longestStreak >= tilesNeededToWin) {
+      return typeOfLongestStreak;
+    }
+
+    return null;
   };
 
   proto.findWinner = function findWinner(matrix, tilesNeededToWin) {
-    function findWinnerInRow(row) {
-      let longestStreak = 0;
-      let typeOfLongestStreak;
-
-      let currentStreak = 0;
-      let typeOfCurrentStreak;
-
-      row.forEach((tile, index) => {
-        const previousTile = row[index - 1];
-
-        // if we find an empty tile
-        if (!tile.isTaken) {
-          currentStreak = 0;
-          typeOfCurrentStreak = undefined;
-        }
-
-        // if it is the first tile
-        if (index === 0) {
-          currentStreak = 1;
-          typeOfCurrentStreak = tile;
-          longestStreak = currentStreak;
-          typeOfLongestStreak = typeOfCurrentStreak;
-        } else {
-          // if the tile is different from the previous one
-          if (index > 0 && tile.type !== previousTile.type && tile.isTaken) {
-            currentStreak = 1;
-            typeOfCurrentStreak = tile;
-          }
-
-          // if the tile is the same
-          if (
-            previousTile === undefined
-            || (tile.type === previousTile.type && tile.isTaken)
-          ) {
-            currentStreak += 1;
-            typeOfCurrentStreak = tile;
-          }
-        }
-
-        // Check if we have found a new longest streak
-        if (currentStreak > longestStreak) {
-          longestStreak = currentStreak;
-          typeOfLongestStreak = typeOfCurrentStreak;
-        }
-      });
-
-      if (longestStreak >= tilesNeededToWin) {
-        return typeOfLongestStreak;
-      }
-
-      return null;
-    }
-
     for (let i = 0; i < matrix.length; i += 1) {
       const row = matrix[i];
-      const winner = findWinnerInRow(row, tilesNeededToWin);
+      // eslint-disable-next-line react/no-this-in-sfc
+      const winner = this.findWinnerInRow(row, tilesNeededToWin);
       if (winner !== null) {
         return winner;
       }
     }
     return null;
+  };
+
+  proto.showWinner = function showWinner() {
+    this.winner = this.players[this.itsXsTurn].type;
+    this.showEndScreen = true;
+    this.players[this.itsXsTurn].score += 1;
+    this.amountOfTurns = 0;
+    this.isGameRunning = false;
+  };
+
+  proto.showDraw = function showDraw() {
+    this.showEndScreen = true;
+    this.amountOfTurns = 0;
+    this.isGameRunning = false;
+    Object.keys(this.players).forEach((element) => { this.players[element].score += 1; });
   };
 
   proto.addTic = function addTic(x, y) {
@@ -178,22 +171,12 @@ function Game() {
       const allRowsToCheck = getAllCombinationsOf2DArray(this.board);
       const possibleWinner = this.findWinner(allRowsToCheck, this.tilesNeededToWin);
       if (possibleWinner != null) {
-        this.winner = this.players[this.itsXsTurn].type;
-        this.showEndScreen = true;
-        this.players[this.itsXsTurn].score += 1;
-        this.amountOfTurns = 0;
-        this.isGameRunning = false;
+        this.showWinner();
       }
-
       if (this.gameIsDraw()) {
-        this.showEndScreen = true;
-        this.amountOfTurns = 0;
-        this.isGameRunning = false;
-        Object.keys(this.players).forEach((element) => { this.players[element].score += 1; });
+        this.showDraw();
       }
-
       this.itsXsTurn = !this.itsXsTurn;
-      this.updateView();
     }
   };
   proto.setTilesNeededToWin = function setTilesNeededToWin(val) {
@@ -203,6 +186,9 @@ function Game() {
       throw new Error('game.tilesNeededToWin cannot be less than 3 or greater than game.width');
     }
   };
+
+  this.generateBoard();
+  this.updateView();
 }
 
 // Controller
@@ -216,29 +202,30 @@ const controller = {
         game.addTic(clickedElement.getAttribute('x'), clickedElement.getAttribute('y'));
       }
 
-      if (clickedElement.classList.contains('button-reset')) {
+      if (clickedElement.classList.contains('button-resetBoard')) {
         if (game.isGameRunning) {
-          game.reset();
+          game.resetBoard();
         } else {
-          game.startGame();
+          game.startNewGame();
         }
       }
 
       if (clickedElement.getAttribute('id') === 'score-winner') {
         game.setShowEndScreen(false);
-        game.updateView();
       }
 
       if (clickedElement.classList.contains('button-restart')) {
-        game.restart();
+        game.restartGame();
       }
+      game.updateView();
     });
     gameComponent.addEventListener('input', (event) => {
       const inputElement = event.target;
       const canBoardBeResized = inputElement.id === 'slider-adjust-size' && !game.isGameRunning;
 
       if (canBoardBeResized) {
-        game.generateBoard(inputElement.value);
+        game.setGameBoardSize(inputElement.value);
+        game.resetBoard();
       }
 
       game.updateView();
@@ -281,8 +268,96 @@ function generateRowToElements(row, y, isGameRunning) {
   return rowElement;
 }
 
+function allElementsExist(arrayOfQueries) {
+  return arrayOfQueries.every(query => document.querySelector(query) != null);
+}
+
+function setAttributes(elem, object) {
+  for (let attribute in object) {
+    if (object.hasOwnProperty(attribute)) {
+      if (attribute === 'class' && Array.isArray(object[attribute])) {
+        elem.classList.add(...object[attribute]);
+      } else {
+        elem.setAttribute(attribute, object[attribute]);
+      }
+    }
+  }
+}
+
 const htmlView = {
-  build: (state) => {
+
+  update(state) {
+    const arrayOfQueries = ['#turn-img', '#score-p1', '#score-p2',
+      '#button-resetBoard', '#slider-adjust-size', '#table-tictactoe',
+      '#tictactoe'];
+    if (allElementsExist(arrayOfQueries)) {
+      this.updateView(state);
+    } else {
+      this.buildView(state);
+    }
+  },
+
+  updateView(state) {
+    const turnImg = document.getElementById('turn-img');
+    if (state.turn === 'X') {
+      turnImg.setAttribute('src', '../img/x.png');
+    } else if (state.turn === 'O') {
+      turnImg.setAttribute('src', '../img/o.png');
+    } else {
+      throw new Error('Tile at turn indicator is not X, O or empty.');
+    }
+
+    const scoreP1 = document.getElementById('score-p1');
+    scoreP1.textContent = `${state.players.true.type}: ${state.players.true.score}`;
+
+    const scoreP2 = document.getElementById('score-p2');
+    scoreP2.textContent = `${state.players.false.type}: ${state.players.false.score}`;
+
+    const resetBoardButton = document.getElementById('button-resetBoard');
+
+    if (state.isGameRunning) {
+      resetBoardButton.textContent = 'Clear';
+    } else {
+      resetBoardButton.textContent = 'Play';
+    }
+    const slider = document.getElementById('slider-adjust-size');
+    slider.setAttribute('value', state.width);
+
+    if (state.isGameRunning) {
+      slider.classList.add('slider-inactive');
+      slider.disabled = true;
+    } else {
+      slider.classList.remove('slider-inactive');
+      slider.disabled = false;
+    }
+
+    const table = document.getElementById('table-tictactoe');
+    while (table.firstChild) {
+      table.removeChild(table.firstChild);
+    }
+    state.board.forEach((row, y) => {
+      table.appendChild(generateRowToElements(row, y, state.isGameRunning));
+    });
+
+    if (state.showEndScreen === true) {
+      const container = document.getElementById('tictactoe');
+      const endScreenTextElement = document.createElement('h1');
+      endScreenTextElement.setAttribute('id', 'score-winner');
+
+      if (state.winner !== undefined) {
+        endScreenTextElement.textContent = `The winner is ${state.winner}!`;
+      } else {
+        endScreenTextElement.textContent = 'The game is a draw.';
+      }
+      container.appendChild(endScreenTextElement);
+    }
+    const endScreenTextElementExists = document.getElementById('score-winner');
+    if (endScreenTextElementExists && !state.showEndScreen) {
+      endScreenTextElementExists.remove();
+    }
+  },
+
+  buildView(state) {
     const container = document.getElementById('tictactoe');
     container.setAttribute('class', 'noselect');
 
@@ -327,15 +402,17 @@ const htmlView = {
     scoreElement.appendChild(scoreP2);
     gameInfoElement.appendChild(scoreElement);
 
-    const resetButton = document.createElement('button');
-    resetButton.classList.add('button', 'button-reset');
-    resetButton.setAttribute('id', 'button-reset');
-    resetButton.textContent = 'Play';
+    const resetBoardButton = document.createElement('button');
+    setAttributes(resetBoardButton, {
+      id: 'button-resetBoard',
+      class: ['button', 'button-resetBoard']
+    });
+    resetBoardButton.textContent = 'Play';
 
-    gameInfoElement.appendChild(resetButton);
+    gameInfoElement.appendChild(resetBoardButton);
 
     const restartButton = document.createElement('button');
-    restartButton.classList.add('button', 'button-restart');
+    setAttributes(restartButton, { class: ['button', 'button-restart'] })
     restartButton.textContent = 'Restart';
     gameInfoElement.appendChild(restartButton);
 
@@ -344,12 +421,15 @@ const htmlView = {
     container.appendChild(sliderContainer);
 
     const slider = document.createElement('input');
-    slider.setAttribute('type', 'range');
-    slider.setAttribute('min', '3');
-    slider.setAttribute('max', '8');
-    slider.setAttribute('value', state.width);
-    slider.setAttribute('class', 'slider');
-    slider.setAttribute('id', 'slider-adjust-size');
+    setAttributes(slider, {
+      type: 'range',
+      min: 3,
+      max: 8,
+      value: state.width,
+      class: 'slider',
+      id: 'slider-adjust-size'
+    });
+
     sliderContainer.appendChild(slider);
 
     const table = document.createElement('table');
@@ -360,70 +440,7 @@ const htmlView = {
       table.appendChild(generateRowToElements(row, y, state.isGameRunning));
     });
   },
-
-  update: (state) => {
-    const turnImg = document.getElementById('turn-img');
-    if (state.turn === 'X') {
-      turnImg.setAttribute('src', '../img/x.png');
-    } else if (state.turn === 'O') {
-      turnImg.setAttribute('src', '../img/o.png');
-    } else {
-      throw new Error('Tile at turn indicator is not X, O or empty.');
-    }
-
-    const scoreP1 = document.getElementById('score-p1');
-    scoreP1.textContent = `${state.players.true.type}: ${state.players.true.score}`;
-
-    const scoreP2 = document.getElementById('score-p2');
-    scoreP2.textContent = `${state.players.false.type}: ${state.players.false.score}`;
-
-    const resetButton = document.getElementById('button-reset');
-
-    if (state.isGameRunning) {
-      resetButton.textContent = 'Clear';
-    } else {
-      resetButton.textContent = 'Play';
-    }
-    const slider = document.getElementById('slider-adjust-size');
-    slider.setAttribute('value', state.width);
-
-    if (state.isGameRunning) {
-      slider.classList.add('slider-inactive');
-      slider.disabled = true;
-    } else {
-      slider.classList.remove('slider-inactive');
-      slider.disabled = false;
-    }
-
-    const table = document.getElementById('table-tictactoe');
-    while (table.firstChild) {
-      table.removeChild(table.firstChild);
-    }
-    state.board.forEach((row, y) => {
-      table.appendChild(generateRowToElements(row, y, state.isGameRunning));
-    });
-
-    if (state.showEndScreen === true) {
-      const container = document.getElementById('tictactoe');
-      const endScreenTextElement = document.createElement('h1');
-      endScreenTextElement.setAttribute('id', 'score-winner');
-
-      if (state.winner !== undefined) {
-        endScreenTextElement.textContent = `The winner is ${state.winner}!`;
-      } else {
-        endScreenTextElement.textContent = 'The game is a draw.';
-      }
-      container.appendChild(endScreenTextElement);
-    }
-    const endScreenTextElementExists = document.getElementById('score-winner');
-    if (endScreenTextElementExists && !state.showEndScreen) {
-      endScreenTextElementExists.remove();
-    }
-  },
 };
 
-const game = new Game();
-game.addObserver(htmlView);
-game.start();
-game.buildView();
+const game = new Game(htmlView);
 controller.listen(game);
