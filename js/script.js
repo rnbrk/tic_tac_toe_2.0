@@ -24,11 +24,8 @@ function getAllDiagonals(matrix) {
     let column = startColumn;
     const diagonal = [];
 
-    while (true) {
-      if (row > Math.max(startRow, startColumn) || column < 0) {
-        break;
-      }
-
+    const tileExists = row > Math.max(startRow, startColumn) || column < 0;
+    while (tileExists) {
       diagonal.push(matrix[row][column]);
       row += 1;
       column -= 1;
