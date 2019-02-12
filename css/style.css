@@ -12,7 +12,7 @@ body {
   padding: 0;
 }
 
-article, .game-tictactoe {
+.game-tictactoe {
   font-family: 'Anonymous Pro', monospace;
   font-weight: bold;
   color: #2E1760;
@@ -35,14 +35,14 @@ article, .game-tictactoe {
 }
 /* Gameboard */
 
-#table-tictactoe, #table-gameboard {
+.game-tictactoe .table {
   margin: 0;
   border-spacing: 1rem;
   border-collapse: separate;
   table-layout: fixed;
 }
 
-.tile {
+.game-tictactoe .table .tile {
   width: 6rem;
   height: 6rem;
   min-width: 6rem;
@@ -51,48 +51,51 @@ article, .game-tictactoe {
   text-align: center;
   vertical-align: middle;
   background: #F6F7F8;
-  /* padding: 1rem; */
   position: relative;
   overflow: hidden;
 
   border-radius: 0.2em;
 }
 
-.tile-active:hover {
+.game-tictactoe .table.tile-active:hover {
   background: #FF3366;
 }
 
 /* Game info navbar */
 
-h1, .text-header {
+.text, .screen {
   color: white;
-  font-size: 2.8rem;
   font-family: 'Pacifico', cursive;
   letter-spacing: 0.2rem;
+}
+
+.text-header {
+  font-size: 2.8rem;
   margin: 0;
   margin-left: 1rem;
 }
 
-#gameinfo {
+.game-tictactoe .navbar{
   display: flex;
   height: 100px;
-  min-width: 1000px;
+  /* min-width: 1000px; */
   justify-content: left;
   margin: 2rem;
   margin-left: 1rem;
+  margin-right: 0;
   line-height: 100px;
 }
 
-#gameinfo * {
+.game-tictactoe .navbar > * {
   margin: 7px;
   height: 100%;
 }
 
-#gameinfo *:nth-child(1) {
+.game-tictactoe .navbar > *:nth-child(1) {
   margin-left: 0;
 }
 
-#score {
+.navbar .nav-score {
   display: flex;
   background: #F6F7F8;
   line-height: 300%;
@@ -104,7 +107,7 @@ h1, .text-header {
   width: 12.3rem;
 }
 
-#turn {
+.game-tictactoe .navbar .nav-turn {
   height: 100%;
   width: 100px;
   font-size: 3rem;
@@ -112,14 +115,14 @@ h1, .text-header {
   border-radius: 0.2em;
 }
 
-#turn img, .tile img {
+.img-xo {
   text-align:center;
   width:100%;
   display:block;
   margin:auto;
 }
 
-#score * {
+.text-score {
   margin: 1rem;
 }
 
@@ -147,22 +150,18 @@ h1, .text-header {
 	top:1px;
 }
 
-#slider-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-left: 1rem;
-  width: 100%;
-}
-
-#slider-adjust-size {
-  display: block;
-  width: 37rem;
-  margin-left: 1rem;
-}
-
-.slidercontainer {
+.nav-slider {
   padding: 0;
+  padding-right: 0.5rem;
+  padding-left: 0.8rem;
+  width: 38.5rem;
+}
+
+.nav-slider .slider {
+  display: block;
+  width: 100%;
+  margin-right: 0;
+  justify-content: left;
 }
 
 .slider-inactive {
@@ -201,8 +200,7 @@ h1, .text-header {
 
 /* End screen */
 
-#score-winner {
-  color: white;
+.screen-endscreen {
   position: absolute;
   left: 0;
   top: 0;

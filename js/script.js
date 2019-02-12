@@ -214,15 +214,16 @@ function main() {
   const controller = {
 
     listen(game) {
-      const gameComponent = document.getElementById('tictactoe');
+      const gameComponent = document.querySelector('#tictactoe');
       gameComponent.addEventListener('click', (event) => {
         const clickedElement = event.target;
 
-        const isResetButton = clickedElement.classList.contains('button-resetBoard');
-        const isEndScreen = clickedElement.getAttribute('id') === 'score-winner';
-        const isRestartButton = clickedElement.classList.contains('button-restart');
+        const isResetButton = clickedElement.getAttribute('id') === 'button-play-clear';
+        const isEndScreen = clickedElement.getAttribute('id') === 'screen-endscreen';
+        const isRestartButton = clickedElement.getAttribute('id') === 'button-restart';
+        const isGameTile = clickedElement.classList.contains('tile');
 
-        if (clickedElement.classList.contains('tile')) {
+        if (isGameTile) {
           game.addTic(clickedElement.getAttribute('x'), clickedElement.getAttribute('y'));
         }
 
@@ -246,7 +247,7 @@ function main() {
 
       gameComponent.addEventListener('input', (event) => {
         const inputElement = event.target;
-        const canBoardBeResized = inputElement.id === 'slider-adjust-size' && !game.isGameRunning;
+        const canBoardBeResized = inputElement.id === 'slider-changesize' && !game.isGameRunning;
 
         if (canBoardBeResized) {
           game.setGameBoardSize(inputElement.value);
@@ -261,9 +262,11 @@ function main() {
   const htmlView = {
 
     update(state) {
-      const arrayOfQueries = ['#turn-img', '#score-p1', '#score-p2',
-        '#button-resetBoard', '#slider-adjust-size', '#table-tictactoe',
-        '#tictactoe'];
+      const arrayOfQueries = ['#gameinfo-navbar',
+        '#nav-turn-element', '#nav-score-element', '#score-p1', '#score-p2',
+        '#button-play-clear', '#button-restart', '#slider-wrapper', '#slider-changesize',
+        '#table-gameboard'];
+
       if (allElementsExist(arrayOfQueries)) {
         this.updateView(state);
       } else {
@@ -272,24 +275,24 @@ function main() {
     },
 
     updateView(state) {
-      const turnImg = document.getElementById('turn-img');
+      const turnImg = document.querySelector('#img-turn');
 
-      this.setTileImgAttributes(turnImg, state, 'turn-img');
+      this.setTileImgAttributes(turnImg, state, 'img-turn');
 
-      const scoreP1 = document.getElementById('score-p1');
+      const scoreP1 = document.querySelector('#score-p1');
       scoreP1.textContent = `${state.players.true.type}: ${state.players.true.score}`;
 
-      const scoreP2 = document.getElementById('score-p2');
+      const scoreP2 = document.querySelector('#score-p2');
       scoreP2.textContent = `${state.players.false.type}: ${state.players.false.score}`;
 
-      const resetBoardButton = document.getElementById('button-resetBoard');
+      const resetBoardButton = document.querySelector('#button-play-clear');
 
       if (state.isGameRunning) {
         resetBoardButton.textContent = 'Clear';
       } else {
         resetBoardButton.textContent = 'Play';
       }
-      const slider = document.getElementById('slider-adjust-size');
+      const slider = document.querySelector('#slider-changesize');
       slider.setAttribute('value', state.width);
 
       if (state.isGameRunning) {
@@ -300,7 +303,7 @@ function main() {
         slider.disabled = false;
       }
 
-      const table = document.getElementById('table-tictactoe');
+      const table = document.querySelector('#table-gameboard');
       removeAllChildren(table);
 
       state.board.forEach((row, y) => {
@@ -308,9 +311,9 @@ function main() {
       });
 
       if (state.showEndScreen === true) {
-        const container = document.getElementById('tictactoe');
-        const endScreenTextElement = document.createElement('h1');
-        endScreenTextElement.setAttribute('id', 'score-winner');
+        const container = document.querySelector('#tictactoe');
+        const endScreenTextElement = document.createElement('div');
+        setAttributes(endScreenTextElement, { id: 'screen-endscreen', class: ['screen', 'screen-endscreen'] });
 
         if (state.winner !== undefined) {
           endScreenTextElement.textContent = `The winner is ${state.winner}!`;
@@ -319,60 +322,64 @@ function main() {
         }
         container.appendChild(endScreenTextElement);
       }
-      const endScreenTextElementExists = document.getElementById('score-winner');
+      const endScreenTextElementExists = document.querySelector('#screen-endscreen');
       if (endScreenTextElementExists && !state.showEndScreen) {
         endScreenTextElementExists.remove();
       }
     },
 
     setTileImgAttributes(img, state, id) {
-      img.setAttribute('id', id);
-      img.setAttribute('src', state.turn === PLAYERX ? X_IMG : O_IMG);
+      setAttributes(img, {
+        id,
+        src: state.turn === PLAYERX ? X_IMG : O_IMG,
+        class: 'img-xo',
+      });
       return img;
     },
 
     buildView(state) {
-      const container = document.getElementById('tictactoe');
-      container.setAttribute('class', 'noselect');
-
+      const container = document.querySelector('#tictactoe');
       removeAllChildren(container);
+      setAttributes(container, { class: ['game-tictactoe', 'noselect'] });
 
       const header = document.createElement('h1');
+      setAttributes(header, { class: ['text', 'text-header'] });
       header.textContent = 'Tic-tac-toe 2.0';
 
       const gameInfoElement = document.createElement('div');
-      gameInfoElement.setAttribute('id', 'gameinfo');
+      setAttributes(gameInfoElement, { id: 'gameinfo-navbar', class: 'navbar' });
 
       const turnElement = document.createElement('div');
-      turnElement.setAttribute('id', 'turn');
+      setAttributes(turnElement, { id: 'nav-turn-element', class: ['nav', 'nav-turn'] });
 
       const turnImg = document.createElement('img');
-      this.setTileImgAttributes(turnImg, state, 'turn-img');
+      this.setTileImgAttributes(turnImg, state, 'img-turn');
 
       const scoreElement = document.createElement('div');
-      scoreElement.setAttribute('id', 'score');
+      setAttributes(scoreElement, { id: 'nav-score-element', class: ['nav', 'nav-score'] });
 
       const scoreP1 = document.createElement('h3');
-      scoreP1.setAttribute('id', 'score-p1');
+      setAttributes(scoreP1, {
+        id: 'score-p1', class: 'text-score',
+      });
       scoreP1.textContent = `${state.players.true.type}: ${state.players.true.score}`;
 
       const scoreP2 = document.createElement('h3');
-      scoreP2.setAttribute('id', 'score-p2');
+      setAttributes(scoreP2, { id: 'score-p2', class: 'text-score' });
       scoreP2.textContent = `${state.players.false.type}: ${state.players.false.score}`;
 
       const resetBoardButton = document.createElement('button');
       setAttributes(resetBoardButton, {
-        id: 'button-resetBoard',
-        class: ['button', 'button-resetBoard'],
+        id: 'button-play-clear', class: 'button',
       });
       resetBoardButton.textContent = 'Play';
 
       const restartButton = document.createElement('button');
-      setAttributes(restartButton, { class: ['button', 'button-restart'] });
+      setAttributes(restartButton, { id: 'button-restart', class: 'button' });
       restartButton.textContent = 'Restart';
 
       const sliderContainer = document.createElement('div');
-      sliderContainer.setAttribute('id', 'slidercontainer');
+      setAttributes(sliderContainer, { id: 'slider-wrapper', class: ['nav', 'nav-slider'] });
 
       const slider = document.createElement('input');
       setAttributes(slider, {
@@ -381,11 +388,11 @@ function main() {
         max: 8,
         value: state.width,
         class: 'slider',
-        id: 'slider-adjust-size',
+        id: 'slider-changesize',
       });
 
       const table = document.createElement('table');
-      table.setAttribute('id', 'table-tictactoe');
+      setAttributes(table, { id: 'table-gameboard', class: 'table' });
 
       state.board.forEach((row, y) => {
         table.appendChild(this.generateRowToElements(row, y, state.isGameRunning));
@@ -419,7 +426,10 @@ function main() {
 
         if (tile.type) {
           const tileImg = document.createElement('img');
-          tileImg.src = tile.type === PLAYERX ? X_IMG : O_IMG;
+          setAttributes(tileImg, {
+            src: tile.type === PLAYERX ? X_IMG : O_IMG,
+            class: 'img-xo',
+          });
           tileElement.appendChild(tileImg);
         }
 
