@@ -1,4 +1,5 @@
 import { fill2DArray, getAllCombinationsOf2DArray } from './modules/2Darray.mjs';
+import { allElementsExist, setAttributes } from './modules/domfunctions.mjs';
 
 function Tile(type = '') {
   if (typeof type !== 'string') {
@@ -268,22 +269,6 @@ function generateRowToElements(row, y, isGameRunning) {
   return rowElement;
 }
 
-function allElementsExist(arrayOfQueries) {
-  return arrayOfQueries.every(query => document.querySelector(query) != null);
-}
-
-function setAttributes(elem, object) {
-  for (let attribute in object) {
-    if (object.hasOwnProperty(attribute)) {
-      if (attribute === 'class' && Array.isArray(object[attribute])) {
-        elem.classList.add(...object[attribute]);
-      } else {
-        elem.setAttribute(attribute, object[attribute]);
-      }
-    }
-  }
-}
-
 const htmlView = {
 
   update(state) {
@@ -405,14 +390,14 @@ const htmlView = {
     const resetBoardButton = document.createElement('button');
     setAttributes(resetBoardButton, {
       id: 'button-resetBoard',
-      class: ['button', 'button-resetBoard']
+      class: ['button', 'button-resetBoard'],
     });
     resetBoardButton.textContent = 'Play';
 
     gameInfoElement.appendChild(resetBoardButton);
 
     const restartButton = document.createElement('button');
-    setAttributes(restartButton, { class: ['button', 'button-restart'] })
+    setAttributes(restartButton, { class: ['button', 'button-restart'] });
     restartButton.textContent = 'Restart';
     gameInfoElement.appendChild(restartButton);
 
@@ -427,7 +412,7 @@ const htmlView = {
       max: 8,
       value: state.width,
       class: 'slider',
-      id: 'slider-adjust-size'
+      id: 'slider-adjust-size',
     });
 
     sliderContainer.appendChild(slider);
