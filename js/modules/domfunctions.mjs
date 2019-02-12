@@ -12,4 +12,18 @@ function setAttributes(elem, obj) {
   });
 }
 
-export { allElementsExist, setAttributes };
+function appendChildren(elem, arr) {
+  arr.forEach((childNode) => {
+    elem.appendChild(childNode);
+  });
+}
+
+function removeAllChildren(elem) {
+  while (elem.firstChild) {
+    elem.removeChild(elem.firstChild);
+  }
+}
+
+export {
+  allElementsExist, setAttributes, appendChildren, removeAllChildren,
+};

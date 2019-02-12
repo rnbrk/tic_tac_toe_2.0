@@ -12,7 +12,7 @@ body {
   padding: 0;
 }
 
-article {
+article, .game-tictactoe {
   font-family: 'Anonymous Pro', monospace;
   font-weight: bold;
   color: #2E1760;
@@ -24,17 +24,18 @@ article {
   padding-bottom: 0;
 }
 
-h1 {
-  color: white;
-  font-size: 2.8rem;
-  font-family: 'Pacifico', cursive;
-  letter-spacing: 0.2rem;
-  margin: 0;
-  margin-left: 1rem;
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
+/* Gameboard */
 
-
-#table-tictactoe {
+#table-tictactoe, #table-gameboard {
   margin: 0;
   border-spacing: 1rem;
   border-collapse: separate;
@@ -61,6 +62,17 @@ h1 {
   background: #FF3366;
 }
 
+/* Game info navbar */
+
+h1, .text-header {
+  color: white;
+  font-size: 2.8rem;
+  font-family: 'Pacifico', cursive;
+  letter-spacing: 0.2rem;
+  margin: 0;
+  margin-left: 1rem;
+}
+
 #gameinfo {
   display: flex;
   height: 100px;
@@ -78,6 +90,61 @@ h1 {
 
 #gameinfo *:nth-child(1) {
   margin-left: 0;
+}
+
+#score {
+  display: flex;
+  background: #F6F7F8;
+  line-height: 300%;
+  font-size: 1.5rem;
+  padding-left: 1rem;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 0.4em;
+  width: 12.3rem;
+}
+
+#turn {
+  height: 100%;
+  width: 100px;
+  font-size: 3rem;
+  background: #F6F7F8;
+  border-radius: 0.2em;
+}
+
+#turn img, .tile img {
+  text-align:center;
+  width:100%;
+  display:block;
+  margin:auto;
+}
+
+#score * {
+  margin: 1rem;
+}
+
+.button {
+	background-color:#F6F7F8;
+	-moz-border-radius:28px;
+	-webkit-border-radius:28px;
+	border-radius:28px;
+	border: none;
+	display:inline-block;
+  cursor:pointer;
+  font-family: 'Anonymous Pro', monospace;
+  font-weight: bold;
+	color: #2E1760;
+	font-size:1.3rem;
+	padding:16px 31px;
+  text-decoration:none;
+  min-width: 7.5rem;
+}
+.button:hover {
+	background-color:#FF3366;
+}
+.button:active {
+	position:relative;
+	top:1px;
 }
 
 #slider-container {
@@ -102,7 +169,6 @@ h1 {
   opacity: 0.4;
 }
 
-/* The slider itself */
 .slider {
   -webkit-appearance: none;
   height: 15px;
@@ -133,48 +199,7 @@ h1 {
   cursor: pointer;
 }
 
-#score {
-  display: flex;
-  background: #F6F7F8;
-  line-height: 300%;
-  font-size: 1.5rem;
-  padding-left: 1rem;
-  text-align: center;
-  vertical-align: middle;
-  border-radius: 0.4em;
-  width: 12.3rem;
-}
-
-#input-tilesinarow {
-  background: #F6F7F8;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 1.5rem;
-  border: none;
-  margin-top: 0;
-  border-radius: 0.2em;
-  width: 6rem;
-
-}
-
-#turn {
-  height: 100%;
-  width: 100px;
-  font-size: 3rem;
-  background: #F6F7F8;
-  border-radius: 0.2em;
-}
-
-#turn img, .tile img {
-  text-align:center;
-  width:100%;
-  display:block;
-  margin:auto;
-}
-
-#score * {
-  margin: 1rem;
-}
+/* End screen */
 
 #score-winner {
   color: white;
@@ -194,38 +219,4 @@ h1 {
 
   font-size: 4rem;
 
-}
-
-.button {
-	background-color:#F6F7F8;
-	-moz-border-radius:28px;
-	-webkit-border-radius:28px;
-	border-radius:28px;
-	border: none;
-	display:inline-block;
-  cursor:pointer;
-  font-family: 'Anonymous Pro', monospace;
-  font-weight: bold;
-	color: #2E1760;
-	font-size:1.3rem;
-	padding:16px 31px;
-  text-decoration:none;
-  min-width: 7.5rem;
-}
-.button:hover {
-	background-color:#FF3366;
-}
-.button:active {
-	position:relative;
-	top:1px;
-}
-
-.noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome and Opera */
 }
